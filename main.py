@@ -6,10 +6,14 @@ sns.set()
 
 class Visualize:
     def __init__(self, r):
-        fig = plt.figure(figsize=(10, 10))
+        self.r = r
+        fig = plt.figure(figsize=(15, 8))
         plt.axis('off')
-        circle = plt.Circle((0, 0), r, color='red', fill=False)
-        plt.gca().add_patch(circle)
+        inner_circle = plt.Circle((0, 0), self.r, color='red', fill=False)
+        outer_circle = plt.Circle((0, 0), 2*self.r, color='red', fill=False, linestyle='--')
+        plt.gca().add_patch(inner_circle)
+        plt.gca().add_patch(outer_circle)
+        plt.text(-0.5, 2.1, 'Nisses Election Compass')
 
     def createQuestionPoints(self, nr_of_questions):
         degrees_per_point = 360 / nr_of_questions
@@ -22,22 +26,29 @@ class Visualize:
     def createPartieBars(self, max_score):
         counter = 0
         for idx, question in df.iterrows():
-            print(question.name)
-            for index, partie in enumerate(df.columns):
-                x = self.coord_of_points[counter, 0]*(1 + question[df.columns[index]] / max_score)
-                y = self.coord_of_points[counter, 1]*(1 + question[df.columns[index]] / max_score)
-                plt.plot([self.coord_of_points[counter, 0], x], [self.coord_of_points[counter, 1], y], color=color_list[index])
-                plt.text(x, y, partie, fontsize=5*r)
-            plt.plot([self.coord_of_points[counter, 0], 2*self.coord_of_points[counter, 0]], [self.coord_of_points[counter, 1], 2*self.coord_of_points[counter, 1]], '--k', alpha=0.5, markersize=1)
-            plt.text(2*self.coord_of_points[counter, 0], 2*self.coord_of_points[counter, 1], question.name, fontsize=7*r, rotation=90, verticalalignment='center')
+            sorted_value_index = np.argsort(question.values)
+            previous_value = 0
+            for index in sorted_value_index:
+                current_partie = df.columns[sorted_value_index[index]]
+                current_value = question.values[sorted_value_index[index]]
+                current_partie_color = color_list[sorted_value_index[index]]
+                x0 = self.coord_of_points[counter, 0]*(1 + previous_value / max_score)
+                y0 = self.coord_of_points[counter, 1]*(1 + previous_value / max_score)
+                x1 = self.coord_of_points[counter, 0]*(1 + current_value / max_score)
+                y1 = self.coord_of_points[counter, 1]*(1 + current_value / max_score)
+                plt.plot([x0, x1], [y0, y1], color=current_partie_color)
+                plt.text(x1, y1, current_partie, fontsize=5*r)
+                previous_value = current_value
+            #plt.plot([self.coord_of_points[counter, 0], x1], [self.coord_of_points[counter, 1], y1], '--k', alpha=0.5, markersize=0.5)
+            plt.text(self.coord_of_points[counter, 0]*2.05*self.r, self.coord_of_points[counter, 1]*2.05*self.r, question.name, fontsize=7*r, rotation=90, verticalalignment='center', fontweight='bold')
             counter += 1
 
 df = pd.read_csv('Sweden_partie_program_opinions_2022.csv', sep=';', skiprows=1)
-df = df.set_index(df.columns[0]) # sätt frågorna som radindex
-#print(df.loc['Skatt']) # få ut en specifik fråga
+df = df.set_index(df.columns[0]) # use the questions as radii index
+#print(df.loc['Skatt']) # extract a specific question
 
 max_score = 10 # maximum value for a question in the table
-r = 1 # radie
+r = 1 # radii
 color_list = ['#009933', '#000077', '#006AB3', '#83CF39', '#52BDEC', '#E8112d', '#DDDD00', '#DA291C']
 visualization = Visualize(r)
 visualization.createQuestionPoints(2)
