@@ -2,6 +2,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
 import seaborn as sns
+from sklearn.metrics import jaccard_score
 sns.set()
 
 class Visualize:
@@ -45,6 +46,9 @@ class Visualize:
 
 df = pd.read_csv('Sweden_partie_program_opinions_2022.csv', sep=';', skiprows=1)
 df = df.set_index(df.columns[0]) # use the questions as radii index
+print("Please enter ant int i, where i ≥ 0\n")
+answer = input(f"{df.index[0]}: ")
+print(f"Your answer: {answer}\n")
 #print(df.loc['Skatt']) # extract a specific question
 
 max_score = 10 # maximum value for a question in the table
