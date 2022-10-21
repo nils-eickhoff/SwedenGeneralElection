@@ -1,3 +1,4 @@
+from turtle import clear
 import pandas as pd
 from matplotlib import pyplot as plt
 import numpy as np
@@ -24,11 +25,23 @@ class Visualize:
         self.coord_of_points [:, 1] = np.sin(self.deg_array) # y-coords
         plt.plot(self.coord_of_points[:, 0], self.coord_of_points[:, 1], '.b')
     
-    def createPartieBars(self, max_score):
+    def createPartieBars(self, max_score: int):
         counter = 0
+        answers = np.arange(df.shape[0])
         for idx, question in df.iterrows():
             sorted_value_index = np.argsort(question.values)
             previous_value = 0
+            answers[counter] = int(input(f"{df.index[counter]}: "))
+            if ( counter == 0 ):
+                x_org = self.coord_of_points[counter, 0]*(1 + answers[counter] / max_score)
+                y_org = self.coord_of_points[counter, 1]*(1 + answers[counter] / max_score)
+            elif ( counter > 0 ):
+                x_cur = self.coord_of_points[counter, 0]*(1 + answers[counter] / max_score)
+                y_cur= self.coord_of_points[counter, 1]*(1 + answers[counter] / max_score)
+                plt.plot([x_prev, x_cur], [y_prev, y_cur], color=color_list[-1])
+                #plt.text(x_prev, y_prev, "YOUR_ANSWER", fontsize=5*r)
+            x_prev = self.coord_of_points[counter, 0]*(1 + answers[counter] / max_score)
+            y_prev = self.coord_of_points[counter, 1]*(1 + answers[counter] / max_score)
             for index in sorted_value_index:
                 current_partie = df.columns[sorted_value_index[index]]
                 current_value = question.values[sorted_value_index[index]]
@@ -41,21 +54,26 @@ class Visualize:
                 plt.text(x1, y1, current_partie, fontsize=5*r)
                 previous_value = current_value
             #plt.plot([self.coord_of_points[counter, 0], x1], [self.coord_of_points[counter, 1], y1], '--k', alpha=0.5, markersize=0.5)
-            plt.text(self.coord_of_points[counter, 0]*2.05*self.r, self.coord_of_points[counter, 1]*2.05*self.r, question.name, fontsize=7*r, rotation=90, verticalalignment='center', fontweight='bold')
+            if (counter / df.shape[0] < 0.5):
+                plt.text(self.coord_of_points[counter, 0]*2.05*self.r, self.coord_of_points[counter, 1]*2.05*self.r, question.name, fontsize=7*r, rotation=360*(counter/df.shape[0]) - 90, verticalalignment='center', fontweight='bold')
+            else:
+                plt.text(self.coord_of_points[counter, 0]*2.05*self.r, self.coord_of_points[counter, 1]*2.05*self.r, question.name, fontsize=7*r, rotation=360*(counter/df.shape[0]) + 90, verticalalignment='center', fontweight='bold')
             counter += 1
+        plt.plot([x_cur, x_org], [y_cur, y_org], color=color_list[-1])
 
+print("Please enter ant int i, where i ≥ 0\n")
 df = pd.read_csv('Sweden_partie_program_opinions_2022.csv', sep=';', skiprows=1)
 df = df.set_index(df.columns[0]) # use the questions as radii index
-print("Please enter ant int i, where i ≥ 0\n")
-answer = input(f"{df.index[0]}: ")
-print(f"Your answer: {answer}\n")
+
+#answer = input(f"{df.index[0]}: ")
+#print(f"Your answer: {answer}\n")
 #print(df.loc['Skatt']) # extract a specific question
 
 max_score = 10 # maximum value for a question in the table
 r = 1 # radii
-color_list = ['#009933', '#000077', '#006AB3', '#83CF39', '#52BDEC', '#E8112d', '#DDDD00', '#DA291C']
+color_list = ['#009933', '#000077', '#006AB3', '#83CF39', '#52BDEC', '#E8112d', '#DDDD00', '#DA291C', '#FFA500']
 visualization = Visualize(r)
-visualization.createQuestionPoints(2)
+visualization.createQuestionPoints(df.shape[0])
 visualization.createPartieBars(max_score)
 
 plt.show()
